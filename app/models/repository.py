@@ -1,45 +1,35 @@
 import os
-from typing import AsyncGenerator
-
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-
-Base = declarative_base()
+from app.models.models import Base
+from sqlalchemy import select
+from app.models.db import SessionLocal
 
 class Repository:
-    def __init__(self):
-        self.session = SessionLocal()
+    def __init__(self, model: Base, id: int):
+        self.SessionFactory = SessionLocal()
+        self.model = model
+        self.id = id
 
-    def get_by_id(self, model: Base, id: int) -> AsyncGenerator[Base, None]:
-        session = self.session()
-        try:
-            result = session.execute(select(model).where(model.id == id))
+    async def get_by_id(self) -> Base | None:
+        async with self.SessionFactory() as session:
+            result = await session.execute(select(self.model).where(self.model.id == self.id))
             return result.scalar_one_or_none()
-        except Exception as e:
-            raise e
-        finally:
-            session.close() 
 
-    def create(self, model: Base) -> AsyncGenerator[Base, None]:
-        session = self.session()
-        try:
-            session.add(model)
-            session.commit()
-            return model
-        except Exception as e:
-            raise e
-        finally:
-            session.close()
-        
-    
-    def delete(self, model: Base) -> AsyncGenerator[Base, None]:
-        session = self.session()
-        try:
-            session.delete(model)
-            session.commit()
-            return model
-        except Exception as e:
-            raise e
-        finally:
-            session.close()
+    async def create(self) -> Base:
+        async with self.SessionFactory() as session:
+            session.add(self.model)
+            await session.commit()
+            await session.refresh(self.model)
+            return self.model
+
+    async def update(self) -> Base:
+        async with self.SessionFactory() as session:
+            session.add(self.model)
+            await session.commit()
+            await session.refresh(self.model)
+            return self.model
+
+    async def delete(self) -> Base:
+        async with self.SessionFactory() as session:
+            await session.delete(self.model)
+            await session.commit()
+            
