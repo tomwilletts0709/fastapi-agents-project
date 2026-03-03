@@ -9,22 +9,37 @@ Base = declarative_base()
 
 class Repository:
     def __init__(self):
-        self.engine = create_engine(os.getenv("DATABASE_URL"))
-        self.session = sessionmaker(bind=self.engine)
+        self.session = SessionLocal()
 
     def get_by_id(self, model: Base, id: int) -> AsyncGenerator[Base, None]:
-        return self.session.query(model).filter(model.id == id).first()
-    
+        session = self.session()
+        try:
+            result = session.execute(select(model).where(model.id == id))
+            return result.scalar_one_or_none()
+        except Exception as e:
+            raise e
+        finally:
+            session.close() 
+
     def create(self, model: Base) -> AsyncGenerator[Base, None]:
-        self.session.add(model)
-        self.session.commit()
-        return model
-    
-    def update(self, model: Base) -> AsyncGenerator[Base, None]:
-        self.session.commit()
-        return model
+        session = self.session()
+        try:
+            session.add(model)
+            session.commit()
+            return model
+        except Exception as e:
+            raise e
+        finally:
+            session.close()
+        
     
     def delete(self, model: Base) -> AsyncGenerator[Base, None]:
-        self.session.delete(model)
-        self.session.commit()
-        return model
+        session = self.session()
+        try:
+            session.delete(model)
+            session.commit()
+            return model
+        except Exception as e:
+            raise e
+        finally:
+            session.close()
