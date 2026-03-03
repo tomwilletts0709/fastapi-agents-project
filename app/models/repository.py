@@ -1,17 +1,16 @@
-import os
 from app.models.models import Base
 from sqlalchemy import select
 from app.models.db import SessionLocal
 
 class Repository:
     def __init__(self, model: Base, id: int):
-        self.SessionFactory = SessionLocal()
+        self.SessionFactory = SessionLocal
         self.model = model
         self.id = id
 
-    async def get_by_id(self) -> Base | None:
+    async def get_by_id(self, model: Base, id: int) -> Base | None:
         async with self.SessionFactory() as session:
-            result = await session.execute(select(self.model).where(self.model.id == self.id))
+            result = await session.execute(select(model).where(model.id == id))
             return result.scalar_one_or_none()
 
     async def create(self) -> Base:
@@ -30,6 +29,6 @@ class Repository:
 
     async def delete(self) -> Base:
         async with self.SessionFactory() as session:
-            await session.delete(self.model)
+            session.delete(self.model)
             await session.commit()
-            
+            return self.model
