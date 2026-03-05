@@ -17,8 +17,10 @@ dependencies = [
     "uvicorn[standard]>=0.27.0",
     "python-dotenv>=1.0.0",
     "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
     "pydantic-ai[anthropic]>=0.0.12",
     "sqlalchemy[asyncio]>=2.0.0",
+    "asyncpg>=0.29.0",
     "loguru>=0.7.0",
 ]
 
@@ -26,12 +28,14 @@ dependencies = [
 dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
+    "alembic>=1.13.0",
 ]
 
 [tool.uv]
 dev-dependencies = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
+    "alembic>=1.13.0",
 ]
 
 [tool.setuptools.packages.find]

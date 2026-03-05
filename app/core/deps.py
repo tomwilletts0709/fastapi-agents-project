@@ -1,11 +1,9 @@
 from dataclasses import dataclass
-from typing import Any
+
+import httpx
+
 
 @dataclass
-class Depedencies: 
+class Dependencies:
     api_key: str
     http_client: httpx.AsyncClient
-
-
-
-    

@@ -3,14 +3,14 @@ from sqlalchemy import select
 from app.models.db import SessionLocal
 
 class Repository:
-    def __init__(self, model: Base, id: int):
+    def __init__(self, model: Base | None = None, entity_id: int | None = None):
         self.SessionFactory = SessionLocal
         self.model = model
-        self.id = id
+        self.entity_id = entity_id
 
-    async def get_by_id(self, model: Base, id: int) -> Base | None:
+    async def get_by_id(self, model: type[Base], entity_id: int) -> Base | None:
         async with self.SessionFactory() as session:
-            result = await session.execute(select(model).where(model.id == id))
+            result = await session.execute(select(model).where(model.id == entity_id))
             return result.scalar_one_or_none()
 
     async def create(self) -> Base:
