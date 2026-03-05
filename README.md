@@ -55,7 +55,7 @@ Create a `.env` file in the project root:
 
 ```
 # Optional: override DB URL (defaults to sqlite:///./sql_app.db)
-DATABASE_URL=sqlite:///./sql_app.db
+DATABASE_URL=
 
 # Required for Pydantic AI / Anthropic
 ANTHROPIC_API_KEY=your_api_key_here
@@ -80,11 +80,60 @@ The API will be available at [http://localhost:8000](http://localhost:8000).
 - **Docs (Swagger)**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
+## Frontend
+
+A Next.js TypeScript frontend now lives in `frontend/` and is designed for Vercel deployment.
+
+### Frontend setup
+
+```bash
+cd frontend
+npm install
+cp .env.local.example .env.local
+```
+
+Set the backend URL in `frontend/.env.local`:
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+### Run the frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+The frontend will be available at [http://localhost:3000](http://localhost:3000).
+
+### Run backend + frontend (local end-to-end)
+
+1. **Terminal 1** – backend:
+   ```bash
+   uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+2. **Terminal 2** – frontend:
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+3. Open [http://localhost:3000](http://localhost:3000), start a new conversation, and send a message. The frontend talks to the API at `http://localhost:8000`.
+
+### Deploy to Vercel
+
+1. Import the repository into Vercel.
+2. Set the project root to `frontend/`.
+3. Add `NEXT_PUBLIC_API_URL` in the Vercel environment variables, pointing to your deployed FastAPI backend.
+
 ## API Endpoints
 
 | Method | Path     | Description        |
 |--------|----------|--------------------|
-| POST   | `/agents`| Create a new agent |
+| POST   | `/conversation` | Create a conversation and return its ID |
+| POST   | `/chat` | Send a message to the active conversation |
 
 ## Domain Models
 
@@ -108,9 +157,8 @@ pytest tests/
 
 ### Database
 
-SQLite is used by default. The database file is created at `./sql_app.db` on first run.
+Postgres is used by default. 
 
-To use PostgreSQL or another backend, set `DATABASE_URL` in `.env` and ensure the URL matches SQLAlchemy’s async format for your driver.
 
 ## License
 
