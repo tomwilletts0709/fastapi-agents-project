@@ -31,13 +31,22 @@ app/
 
 ### Installation
 
+**Using uv (recommended):**
+
+```bash
+# Install uv: https://docs.astral.sh/uv/
+uv sync
+```
+
+**Using pip:**
+
 ```bash
 # Create virtual environment (recommended)
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -e .
 ```
 
 ### Environment Variables
@@ -55,10 +64,14 @@ ANTHROPIC_API_KEY=your_api_key_here
 ## Running the App
 
 ```bash
-# Development server (reload on changes)
-python -m app.main
+# With uv
+uv run python -m app.main
+# or
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-# Or with uvicorn directly
+# With pip/venv
+python -m app.main
+# or
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
@@ -86,7 +99,10 @@ The API will be available at [http://localhost:8000](http://localhost:8000).
 ### Running Tests
 
 ```bash
-# From project root
+# With uv (includes dev deps)
+uv run pytest tests/
+
+# With pip
 pytest tests/
 ```
 

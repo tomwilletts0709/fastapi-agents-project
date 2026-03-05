@@ -1,10 +1,12 @@
 from fastapi import FastAPI
-import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn  
 from dotenv import load_dotenv
 from app.api import router
 from app.ai.agents import chat_agent  # noqa: F401 - for future use
+from app.core.settings import Settings
 
-load_dotenv()
+settings = Settings()
 
 app = FastAPI() 
 
