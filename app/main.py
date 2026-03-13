@@ -1,12 +1,19 @@
 import uvicorn
 from dotenv import load_dotenv
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
 
 load_dotenv()
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
+from app.core.logging import setup_logging
+from app.core.rate_limiting import RateLimitingMiddleware
+from app.core.telemetry import TelemetryMiddleware
+from app.core.settings import settings
 from app.api import router
+
+setup_logging()
+logger.info("Starting the application")
 
 app = FastAPI()
 
@@ -18,8 +25,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(RateLimitingMiddleware(redis_url=settings.redis_url))
+app.add_middleware(TelemetryMiddleware())
+
 app.include_router(router)
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
-
