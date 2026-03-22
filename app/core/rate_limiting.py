@@ -1,24 +1,31 @@
+from collections.abc import Callable
 
+import redis.asyncio as redis
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response
-import redis.asyncio as redis
 
 
 class RateLimitingMiddleware(BaseHTTPMiddleware):
-    def __init__(self, redis_url: str, max_requests: int = 5, time_window: int = 60):
+    def __init__(
+        self,
+        app,
+        *,
+        redis_url: str,
+        max_requests: int = 5,
+        time_window: int = 60,
+    ):
         super().__init__(app)
         self.max_requests = max_requests
         self.time_window = time_window
         self.redis_client = redis.from_url(redis_url, decode_responses=True)
 
-    async def dispatch(self, request: Request, call_next: Callable) -> None:
-        client_ip = request.client.host
+    async def dispatch(self, request: Request, call_next: Callable):
+        client_ip = request.client.host if request.client else "127.0.0.1"
         key = f"rate_limit:{client_ip}"
 
         try:
-            current_count = await self,redis_client.incr(key)
+            current_count = await self.redis_client.incr(key)
 
             if current_count == 1: 
                 await self.redis_client.expire(key, self.time_window)
@@ -31,9 +38,7 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
                 )
 
             return await call_next(request)
-        except Exception as e:
+        except Exception:
             return JSONResponse(
-                status_code=500, content={"detail": "Internal Server Error"})
-
-        response = await call_next(request)
-        return response
+                status_code=500, content={"detail": "Internal Server Error"}
+            )

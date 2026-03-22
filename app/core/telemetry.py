@@ -1,8 +1,11 @@
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry import trace
-from starlette.responses import Response
-from opentelemetry.trace import Span
 from typing import Any
+
+from fastapi import FastAPI
+from opentelemetry import trace
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.trace import Span
+from starlette.responses import Response
+
 
 def setup_telemetry(app: FastAPI) -> None:
     FastAPIInstrumentor.instrument_app(app)

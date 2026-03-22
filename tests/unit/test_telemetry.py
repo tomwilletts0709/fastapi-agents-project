@@ -1,29 +1,68 @@
-from app.core.telemetry import setup_telemetry, trace_current_span, server_request_hook, client_request_hook, client_response_hook, record_llm_usage
-from pytest import AsyncMock, pytest, fixture
+from unittest.mock import MagicMock, patch
 
-@fixture
-def mock_span():
-    return AsyncMock(spec=Span)
+import pytest
+from fastapi import FastAPI
+
+from app.core.telemetry import (
+    record_llm_usage,
+    setup_telemetry,
+    trace_current_span,
+)
+
 
 @pytest.mark.anyio
-async def test_setup_telemetry(mock_span):
+async def test_setup_telemetry():
     app = FastAPI()
-    setup_telemetry(app)
-    assert app.state.telemetry == True
+    with patch("app.core.telemetry.FastAPIInstrumentor") as mock_instrumentor:
+        setup_telemetry(app)
+        mock_instrumentor.instrument_app.assert_called_once_with(app)
+
 
 @pytest.mark.anyio
-async def test_trace_current_span(mock_span):
+async def test_trace_current_span():
     span = trace_current_span()
     assert span is not None
 
+
 @pytest.mark.anyio
-async def test_llm_usage(mock_span):
-    usage = Usage(total_tokens=100, prompt_tokens=50, completion_tokens=50)
-    record_llm_usage(usage)
-    assert mock_span.set_attribute.call_count == 3
-    assert mock_span.set_attribute.call_args_list[0][0][0] == "llm.total_tokens"
-    assert mock_span.set_attribute.call_args_list[0][0][1] == 100
-    assert mock_span.set_attribute.call_args_list[1][0][0] == "llm.prompt_tokens"
-    assert mock_span.set_attribute.call_args_list[1][0][1] == 50
-    assert mock_span.set_attribute.call_args_list[2][0][0] == "llm.completion_tokens"
-    assert mock_span.set_attribute.call_args_list[2][0][1] == 50
+async def test_record_llm_usage_records_attributes():
+    mock_span = MagicMock()
+    mock_span.is_recording.return_value = True
+
+    mock_usage = MagicMock()
+    mock_usage.opentelemetry_attributes.return_value = {
+        "gen_ai.usage.input_tokens": 50,
+        "gen_ai.usage.output_tokens": 50,
+    }
+
+    with patch("app.core.telemetry.trace.get_current_span", return_value=mock_span):
+        record_llm_usage(mock_usage)
+
+    assert mock_span.set_attribute.call_count == 2
+    mock_span.set_attribute.assert_any_call("gen_ai.usage.input_tokens", 50)
+    mock_span.set_attribute.assert_any_call("gen_ai.usage.output_tokens", 50)
+
+
+@pytest.mark.anyio
+async def test_record_llm_usage_skips_when_span_not_recording():
+    mock_span = MagicMock()
+    mock_span.is_recording.return_value = False
+
+    mock_usage = MagicMock()
+    mock_usage.opentelemetry_attributes.return_value = {"gen_ai.usage.input_tokens": 50}
+
+    with patch("app.core.telemetry.trace.get_current_span", return_value=mock_span):
+        record_llm_usage(mock_usage)
+
+    mock_span.set_attribute.assert_not_called()
+
+
+@pytest.mark.anyio
+async def test_record_llm_usage_skips_when_usage_none():
+    mock_span = MagicMock()
+    mock_span.is_recording.return_value = True
+
+    with patch("app.core.telemetry.trace.get_current_span", return_value=mock_span):
+        record_llm_usage(None)
+
+    mock_span.set_attribute.assert_not_called()

@@ -8,7 +8,7 @@ load_dotenv()
 
 from app.core.logging import setup_logging
 from app.core.rate_limiting import RateLimitingMiddleware
-from app.core.telemetry import setup_telemetry, 
+from app.core.telemetry import setup_telemetry
 from app.core.settings import settings
 from app.api import router
 
@@ -16,7 +16,6 @@ from app.api import router
 setup_logging()
 logger.info("Starting the application")
 logger.info("Loading environment variables")
-load_dotenv(
 
 app = FastAPI()
 
@@ -28,8 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(RateLimitingMiddleware(redis_url=settings.redis_url))
-app.add_middleware(TelemetryMiddleware())
+app.add_middleware(RateLimitingMiddleware, redis_url=settings.redis_url)
 
 setup_telemetry(app)
 

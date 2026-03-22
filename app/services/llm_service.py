@@ -25,10 +25,11 @@ class LLMService:
         history = await self.load_messages(session, conversation_id)
         result = await self.agent.run(user_message, message_history=history)
         await self.save_messages(session, conversation_id, user_message, result.output)
-        usage = result.usage() 
-        if usage and usage.has_total_tokens():
-            from app.core.telemetry import record_llm_uasage
-            record_llm_uasage(usage)
+        usage = result.usage()
+        if usage and usage.has_values():
+            from app.core.telemetry import record_llm_usage
+
+            record_llm_usage(usage)
         return result.output
 
     async def _ensure_conversation_exists(
