@@ -7,9 +7,12 @@ from app.core.settings import settings
 model = AnthropicModel(
     "claude-3-5-sonnet-20240620",
     provider=AnthropicProvider(api_key=settings.anthropic_api_key),
-    builtin_tools=[WebSearchTool()]
 )
 
-chat_agent = Agent(model, system_prompt=system_prompt)
+chat_agent = Agent(
+    model,
+    system_prompt=system_prompt,
+    builtin_tools=[WebSearchTool()],
+)
         
 
