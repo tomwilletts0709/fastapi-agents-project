@@ -36,3 +36,13 @@ class AgentConfig(BaseModel):
     config: dict[str, Any] = Field(..., description="The configuration of the agent")
     created_at: datetime = Field(..., description="The creation date of the agent config")
     updated_at: datetime = Field(..., description="The last update date of the agent config")
+
+class Project(BaseModel): 
+    id: int
+    name: str = Field(..., description="The name of the project")
+    description: str = Field(..., description="The description of the project")
+    created_at: datetime = Field(..., description="The creation date of the project")
+    updated_at: datetime = Field(..., description="The last update date of the project")
+    user_id: int = Field(..., description="The id of the user")
+
+    
