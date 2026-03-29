@@ -121,6 +121,18 @@ class LLMService:
         await session.refresh(delete_conversation)
         return delete_conversation.id
 
+    async def select_agent(
+        self, 
+        session: AsyncSession,
+        user_id: int,
+        agent_id: int,
+    ) -> Agent | None: 
+        """ select an agent for a user """
+        session.execute(select(Agent).where(Agent.user_id == user_id, Agent.id == agent_id))
+        result = await session.execute(stmt)
+        return result.scalar_one_or_none()
+    
+
     async def create_project(
         self, 
         session: AsyncSession,
@@ -129,4 +141,29 @@ class LLMService:
         user_id: int,
     ) -> int: 
         """ create a new project for a user """
-        create_project = Project 
+        create_project = Project(name=project_name, description=project_description, user_id=user_id)
+        session.add(create_project)
+        await session.commit()
+        await session.refresh(create_project)
+        return create_project.id
+
+    async def get_project(
+        self, 
+        session: AsyncSession,
+        user_id: int,
+        project_id: int,
+    ) -> Project | None: 
+        """ get a project for a user """
+        session.execute(select(Project).where(Project.user_id == user_id, Project.id == project_id))
+        result = await session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def delete_project(
+        self, 
+        session: AsyncSession,
+        user_id: int,
+        project_id: int,
+    ) -> None: 
+        """ delete a project for a user """
+        session.execute(select(Project).where(Project.user_id == user_id, Project.id == project_id))
+        return result.scalar_one_or_none()
