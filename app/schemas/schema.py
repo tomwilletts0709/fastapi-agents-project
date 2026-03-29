@@ -55,7 +55,6 @@ class DebateTurn(BaseModel):
     round: int
 
 
-
 class Project(BaseModel): 
     id: int
     name: str = Field(..., description="The name of the project")
