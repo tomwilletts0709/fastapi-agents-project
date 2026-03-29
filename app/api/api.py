@@ -36,4 +36,11 @@ async def create_conversation(
     await database.refresh(conversation)
     return conversation.id
 
-
+@router.post("/project")
+async def create_project(
+    database: Annotated[AsyncSession, Depends(get_db)],
+    project_name: str = Body(..., description="The name of the project"),
+    project_description: str = Body(..., description="The description of the project"),
+    user_id: int = Body(..., description="The id of the user"),
+) -> int:
+    return await llm_service.create_project(database, project_name, project_description, user_id)
