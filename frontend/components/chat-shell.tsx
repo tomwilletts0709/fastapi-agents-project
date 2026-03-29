@@ -10,7 +10,6 @@ import { ChatComposer } from "./chat-composer";
 import { ChatSidebar } from "./chat-sidebar";
 import { ChatThread } from "./chat-thread";
 import { Alert, AlertDescription } from "./ui/alert";
-import { cn } from "@/lib/utils";
 
 const SUGGESTIONS = [
   "Summarize the major causes of World War I.",
@@ -82,26 +81,30 @@ export function ChatShell() {
   }
 
   return (
-    <div className="grid min-h-screen grid-cols-1 gap-6 p-6 md:grid-cols-[320px_1fr]">
+    <div className="grid min-h-screen grid-cols-1 gap-0 p-4 md:grid-cols-[280px_1fr] md:gap-4">
       <ChatSidebar conversationId={conversationId} onNewChat={resetChat} />
 
       <motion.main
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-        className={cn(
-          "flex min-h-[calc(100vh-48px)] flex-col overflow-hidden rounded-2xl",
-          "border border-border/50 bg-card/80 backdrop-blur-xl",
-          "shadow-xl shadow-black/20"
-        )}
+        transition={{ duration: 0.1 }}
+        className="flex min-h-[calc(100vh-32px)] flex-col overflow-hidden border-2 border-neon-green bg-black shadow-pixel"
       >
-        <header className="border-b border-border/50 px-8 py-6">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Research assistant
-          </p>
-          <h2 className="mt-1 text-xl font-semibold tracking-tight">
-            Ask nuanced questions and explore ideas.
-          </h2>
+        <header className="border-b-2 border-neon-green px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-neon-magenta font-pixel text-xs">{">>>"}</span>
+            <h2 className="font-pixel text-xs text-neon-green tracking-wider uppercase">
+              CHAT QUEST
+            </h2>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="font-pixel text-[8px] text-neon-yellow">
+              HP [████████░░] 80%
+            </span>
+            <span className="font-pixel text-[8px] text-neon-cyan">
+              LVL 01
+            </span>
+          </div>
         </header>
 
         <ChatThread
@@ -113,11 +116,12 @@ export function ChatShell() {
 
         {error && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mx-6 mb-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.05 }}
+            className="mx-4 mb-3"
           >
-            <Alert variant="destructive" className="rounded-xl">
+            <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           </motion.div>
@@ -135,10 +139,10 @@ export function ChatShell() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="px-8 pb-6 text-center text-xs text-muted-foreground"
+            transition={{ duration: 0.05, delay: 0.3 }}
+            className="px-4 pb-4 text-center font-pixel text-[8px] text-neon-magenta"
           >
-            Built on Next.js · Powered by Claude
+            BUILT ON NEXT.JS // POWERED BY Tom Willetts // (C) 2026
           </motion.p>
         )}
       </motion.main>

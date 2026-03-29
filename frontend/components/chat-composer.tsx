@@ -1,11 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Loader2, Send } from "lucide-react";
 import { useEffect, useRef } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 interface ChatComposerProps {
@@ -34,18 +31,23 @@ export function ChatComposer({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="px-6 pb-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.05 }}
+      className="px-4 pb-4"
     >
       <div
         className={cn(
-          "rounded-2xl border border-border/50 bg-muted/20 p-4 transition-all duration-200",
-          "focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/10",
-          "shadow-lg shadow-black/10"
+          "border-2 border-neon-green bg-black p-3",
+          "shadow-pixel-sm",
+          "focus-within:border-neon-cyan"
         )}
       >
-        <Textarea
+        <div className="flex items-center gap-2 mb-2">
+          <span className="font-pixel text-[8px] text-neon-yellow">{">"}</span>
+          <span className="font-pixel text-[8px] text-neon-green">INPUT</span>
+        </div>
+        <textarea
           ref={textareaRef}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -55,36 +57,39 @@ export function ChatComposer({
               onSubmit();
             }
           }}
-          placeholder="Message the assistant..."
+          placeholder="TYPE YOUR MESSAGE..."
           disabled={disabled}
           rows={1}
           className={cn(
-            "min-h-[28px] resize-none border-0 bg-transparent px-0 shadow-none",
-            "placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
+            "min-h-[28px] w-full resize-none border-0 bg-transparent px-0 font-mono text-xs",
+            "text-neon-green placeholder:text-neon-green/30",
+            "focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
           )}
         />
         <div className="mt-3 flex items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">
-            Enter to send · Shift+Enter for new line
+          <p className="font-pixel text-[7px] text-neon-yellow/60">
+            ENTER = SEND // SHIFT+ENTER = NEW LINE
           </p>
-          <Button
+          <button
             onClick={onSubmit}
             disabled={disabled || isLoading || !value.trim()}
-            size="sm"
-            className="gap-2 rounded-xl px-5 transition-all duration-200 hover:scale-[1.02]"
+            className={cn(
+              "border-2 border-neon-magenta bg-neon-magenta/10 px-4 py-2",
+              "font-pixel text-[8px] text-neon-magenta shadow-pixel-sm",
+              "transition-colors hover:bg-neon-magenta/20 hover:text-white",
+              "active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
+              "disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-neon-magenta/10"
+            )}
           >
             {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Thinking...
-              </>
+              <span className="flex items-center gap-2">
+                <span className="animate-blink">...</span>
+                WAIT
+              </span>
             ) : (
-              <>
-                <Send className="h-4 w-4" />
-                Send
-              </>
+              <span>SEND {">>"}</span>
             )}
-          </Button>
+          </button>
         </div>
       </div>
     </motion.div>

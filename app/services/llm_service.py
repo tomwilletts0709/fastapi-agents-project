@@ -2,14 +2,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi import HTTPException
-from pydantic_ai import ModelRequest, ModelResponse, TextPart, UserPromptPart
+from pydantic_ai import Agent, ModelRequest, ModelResponse, TextPart, UserPromptPart
 
 from app.ai.agents import chat_agent
-from app.models.models import Conversation, Message, Project
+from app.models.models import Agent as AgentModel, Conversation, Message, Project
 
 
 class LLMService:
-    """Orchestrates chat: load history → run agent → persist messages."""
+    """Orchestrates chat: load history -> run agent -> persist messages."""
 
     def __init__(self, agent=chat_agent):
         self.agent = agent
@@ -19,16 +19,17 @@ class LLMService:
         session: AsyncSession,
         conversation_id: int,
         user_message: str,
+        agent: Agent | None = None,
     ) -> str:
         """Run agent with conversation history, persist new messages, return response."""
+        active_agent = agent or self.agent
         await self._ensure_conversation_exists(session, conversation_id)
         history = await self.load_messages(session, conversation_id)
-        result = await self.agent.run(user_message, message_history=history)
+        result = await active_agent.run(user_message, message_history=history)
         await self.save_messages(session, conversation_id, user_message, result.output)
         usage = result.usage()
         if usage and usage.has_values():
             from app.core.telemetry import record_llm_usage
-
             record_llm_usage(usage)
         return result.output
 
@@ -86,84 +87,95 @@ class LLMService:
         await session.commit()
 
     async def create_conversation(
-        self, 
+        self,
         session: AsyncSession,
-        user_id: int, 
+        user_id: int,
         agent_id: int,
-    ) -> int: 
-        """ createt a new conversation with agent """
-        create_conversation = Conversation(user_id=user_id, agent_id=agent_id)
-        session.add(create_conversation)
+    ) -> int:
+        conversation = Conversation(user_id=user_id, agent_id=agent_id)
+        session.add(conversation)
         await session.commit()
-        await session.refresh(create_conversation)
-        return create_conversation.id
+        await session.refresh(conversation)
+        return conversation.id
 
     async def get_conversation(
-        self, 
-        sesssion: AsyncSession,
+        self,
+        session: AsyncSession,
         user_id: int,
-        conversation_id: int, 
+        conversation_id: int,
     ) -> Conversation | None:
-        """ grab the conversation for a user """
-        session.execute(select(Conversation).where(Conversation.user_id == user_id, Conversation.id == conversation_id))
+        stmt = select(Conversation).where(
+            Conversation.user_id == user_id,
+            Conversation.id == conversation_id,
+        )
+        result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def delete_conversation(
-        self, 
-        session: AsyncSession, 
+        self,
+        session: AsyncSession,
         user_id: int,
         conversation_id: int,
-    ) -> None: 
-        """ delete the conversation for a user """
-        session.execute(select(Conversation).where(Conversation.user_id == user_id, Conversation.id == conversation_id))
-        return result.scalar_one_or_none()
-        await session.commit()
-        await session.refresh(delete_conversation)
-        return delete_conversation.id
+    ) -> None:
+        stmt = select(Conversation).where(
+            Conversation.user_id == user_id,
+            Conversation.id == conversation_id,
+        )
+        result = await session.execute(stmt)
+        conversation = result.scalar_one_or_none()
+        if conversation:
+            await session.delete(conversation)
+            await session.commit()
 
     async def select_agent(
-        self, 
+        self,
         session: AsyncSession,
         user_id: int,
         agent_id: int,
-    ) -> Agent | None: 
-        """ select an agent for a user """
-        session.execute(select(Agent).where(Agent.user_id == user_id, Agent.id == agent_id))
+    ) -> AgentModel | None:
+        """Load agent row by id."""
+        stmt = select(AgentModel).where(AgentModel.id == agent_id)
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
-    
 
     async def create_project(
-        self, 
+        self,
         session: AsyncSession,
         project_name: str,
         project_description: str,
         user_id: int,
-    ) -> int: 
-        """ create a new project for a user """
-        create_project = Project(name=project_name, description=project_description, user_id=user_id)
-        session.add(create_project)
+    ) -> int:
+        project = Project(name=project_name, description=project_description, user_id=user_id)
+        session.add(project)
         await session.commit()
-        await session.refresh(create_project)
-        return create_project.id
+        await session.refresh(project)
+        return project.id
 
     async def get_project(
-        self, 
+        self,
         session: AsyncSession,
         user_id: int,
         project_id: int,
-    ) -> Project | None: 
-        """ get a project for a user """
-        session.execute(select(Project).where(Project.user_id == user_id, Project.id == project_id))
+    ) -> Project | None:
+        stmt = select(Project).where(
+            Project.user_id == user_id,
+            Project.id == project_id,
+        )
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def delete_project(
-        self, 
+        self,
         session: AsyncSession,
         user_id: int,
         project_id: int,
-    ) -> None: 
-        """ delete a project for a user """
-        session.execute(select(Project).where(Project.user_id == user_id, Project.id == project_id))
-        return result.scalar_one_or_none()
+    ) -> None:
+        stmt = select(Project).where(
+            Project.user_id == user_id,
+            Project.id == project_id,
+        )
+        result = await session.execute(stmt)
+        project = result.scalar_one_or_none()
+        if project:
+            await session.delete(project)
+            await session.commit()

@@ -627,7 +627,7 @@ requires-dist = [
     { name = "opentelemetry-instrumentation-fastapi", specifier = ">=0.42b0" },
     { name = "opentelemetry-sdk", specifier = ">=1.0.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
-    { name = "pydantic-ai", extras = ["anthropic"], specifier = ">=0.0.12" },
+    { name = "pydantic-ai", extras = ["anthropic", "openai", "google", "groq", "mistral"], specifier = ">=0.0.12" },
     { name = "pydantic-settings", specifier = ">=2.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },

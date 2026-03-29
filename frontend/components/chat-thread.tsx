@@ -1,9 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, User } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/lib/types";
 
@@ -25,82 +23,62 @@ export function ChatThread({
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        className="flex flex-1 items-center justify-center overflow-y-auto px-8 py-12"
+        transition={{ duration: 0.1 }}
+        className="flex flex-1 items-center justify-center overflow-y-auto px-6 py-8"
       >
         <div className="mx-auto max-w-2xl text-center">
-          <motion.div
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-          >
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Start a conversation
-            </p>
-          </motion.div>
-          <motion.h2
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.15 }}
-            className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl"
-          >
-            Ask about politics, history, or anything thoughtful.
-          </motion.h2>
-          <motion.p
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-muted-foreground"
-          >
-            Get nuanced answers from an AI research assistant. Try one of the
-            suggestions below to get started.
-          </motion.p>
+          <p className="font-pixel text-[8px] uppercase tracking-widest text-neon-magenta">
+            ~ HISTORY ARENA ~
+          </p>
+          <h2 className="mt-4 font-pixel text-sm text-neon-green leading-relaxed">
+            INSERT COIN TO BEGIN
+          </h2>
+          <p className="mt-3 font-pixel text-[8px] text-neon-cyan leading-loose">
+            SELECT YOUR QUEST BELOW
+          </p>
+          <p className="mt-1 font-pixel text-[8px] text-neon-green animate-blink">
+            _
+          </p>
 
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mt-8 grid gap-3 sm:grid-cols-2"
-          >
+          <div className="mt-8 grid gap-3 sm:grid-cols-2">
             {suggestions.map((suggestion, i) => (
               <motion.button
                 key={suggestion}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 + i * 0.05 }}
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.05, delay: 0.1 + i * 0.05 }}
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => onSuggestionClick(suggestion)}
                 className={cn(
-                  "rounded-xl border border-border/50 bg-card/50 px-5 py-4 text-left text-sm",
-                  "transition-colors hover:border-primary/30 hover:bg-primary/5",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  "border-2 border-neon-green bg-black px-4 py-3 text-left font-pixel text-[8px] text-neon-green",
+                  "shadow-pixel-sm transition-colors",
+                  "hover:border-neon-cyan hover:text-neon-cyan hover:bg-neon-cyan/5",
+                  "focus-visible:outline-none focus-visible:border-neon-magenta"
                 )}
               >
+                <span className="text-neon-yellow mr-2">{">>"}</span>
                 {suggestion}
               </motion.button>
             ))}
-          </motion.div>
+          </div>
         </div>
       </motion.section>
     );
   }
 
   return (
-    <section className="flex flex-1 flex-col overflow-y-auto px-8 py-8">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <section className="flex flex-1 flex-col overflow-y-auto px-4 py-6">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
         <AnimatePresence mode="popLayout">
-          {messages.map((message, index) => (
+          {messages.map((message) => (
             <motion.div
               key={message.id}
               layout
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              transition={{
-                duration: 0.3,
-                layout: { type: "spring", stiffness: 350, damping: 30 },
-              }}
+              transition={{ duration: 0.1 }}
               className={cn(
                 "flex gap-3",
                 message.role === "user" ? "flex-row-reverse" : "flex-row"
@@ -108,80 +86,67 @@ export function ChatThread({
             >
               <div
                 className={cn(
-                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                  "flex h-8 w-8 shrink-0 items-center justify-center border-2",
                   message.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
+                    ? "border-neon-green bg-neon-green/10 text-neon-green"
+                    : "border-neon-cyan bg-neon-cyan/10 text-neon-cyan"
                 )}
               >
-                {message.role === "user" ? (
-                  <User className="h-4 w-4" />
-                ) : (
-                  <Bot className="h-4 w-4 text-muted-foreground" />
-                )}
+                <span className="font-pixel text-[8px]">
+                  {message.role === "user" ? "P1" : "AI"}
+                </span>
               </div>
-              <Card
+              <div
                 className={cn(
-                  "max-w-[85%] border-border/50",
+                  "max-w-[85%] border-2 px-4 py-3 shadow-pixel-sm",
                   message.role === "user"
-                    ? "bg-primary/15 text-foreground"
-                    : "bg-muted/30"
+                    ? "border-neon-green bg-neon-green/5"
+                    : "border-neon-cyan bg-neon-cyan/5"
                 )}
               >
-                <CardContent className="flex flex-col gap-1 px-4 py-3">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="font-medium">
-                      {message.role === "assistant" ? "Assistant" : "You"}
-                    </span>
-                    <span>
-                      {new Date(message.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {message.content}
-                  </p>
-                </CardContent>
-              </Card>
+                <div className="flex items-center gap-3 mb-1">
+                  <span
+                    className={cn(
+                      "font-pixel text-[8px]",
+                      message.role === "user"
+                        ? "text-neon-green"
+                        : "text-neon-cyan"
+                    )}
+                  >
+                    {message.role === "assistant" ? "CPU" : "P1"}
+                  </span>
+                  <span className="font-pixel text-[7px] text-neon-yellow">
+                    {new Date(message.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+                <p className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-neon-green">
+                  {message.content}
+                </p>
+              </div>
             </motion.div>
           ))}
 
           {isLoading && (
             <motion.div
               layout
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               className="flex gap-3"
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                <Bot className="h-4 w-4 text-muted-foreground" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-neon-cyan bg-neon-cyan/10">
+                <span className="font-pixel text-[8px] text-neon-cyan">AI</span>
               </div>
-              <Card className="border-border/50 bg-muted/30">
-                <CardContent className="flex items-center gap-2 px-4 py-3">
-                  <span className="flex gap-1">
-                    {[0, 1, 2].map((i) => (
-                      <motion.span
-                        key={i}
-                        animate={{
-                          scale: [0.8, 1.2, 0.8],
-                          opacity: [0.5, 1, 0.5],
-                        }}
-                        transition={{
-                          duration: 1,
-                          repeat: Infinity,
-                          delay: i * 0.15,
-                        }}
-                        className="h-2 w-2 rounded-full bg-primary"
-                      />
-                    ))}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    Thinking...
-                  </span>
-                </CardContent>
-              </Card>
+              <div className="border-2 border-neon-cyan bg-neon-cyan/5 px-4 py-3 shadow-pixel-sm">
+                <span className="font-pixel text-[8px] text-neon-cyan">
+                  PROCESSING
+                </span>
+                <span className="font-pixel text-[8px] text-neon-magenta animate-blink ml-1">
+                  {">>>"}
+                </span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
