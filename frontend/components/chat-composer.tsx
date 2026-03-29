@@ -4,6 +4,16 @@ import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 
 import { cn } from "@/lib/utils";
+import type { AppMode } from "@/lib/types";
+
+const MODEL_COLORS: Record<string, string> = {
+  anthropic: "text-neon-magenta border-neon-magenta",
+  openai: "text-neon-green border-neon-green",
+  groq: "text-neon-yellow border-neon-yellow",
+  ollama: "text-neon-cyan border-neon-cyan",
+  google: "text-neon-yellow border-neon-yellow",
+  mistral: "text-neon-magenta border-neon-magenta",
+};
 
 interface ChatComposerProps {
   value: string;
@@ -11,6 +21,10 @@ interface ChatComposerProps {
   isLoading: boolean;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  models: string[];
+  selectedModel: string;
+  onModelChange: (model: string) => void;
+  mode: AppMode;
 }
 
 export function ChatComposer({
@@ -19,6 +33,10 @@ export function ChatComposer({
   isLoading,
   onChange,
   onSubmit,
+  models,
+  selectedModel,
+  onModelChange,
+  mode,
 }: ChatComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -29,6 +47,15 @@ export function ChatComposer({
     textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
   }, [value]);
 
+  function cycleModel(direction: 1 | -1) {
+    if (models.length === 0) return;
+    const currentIndex = models.indexOf(selectedModel);
+    const nextIndex = (currentIndex + direction + models.length) % models.length;
+    onModelChange(models[nextIndex]);
+  }
+
+  const colorClass = MODEL_COLORS[selectedModel] ?? "text-neon-green border-neon-green";
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -36,6 +63,29 @@ export function ChatComposer({
       transition={{ duration: 0.05 }}
       className="px-4 pb-4"
     >
+      {mode === "chat" && models.length > 0 && (
+        <div className="mb-2 flex items-center gap-2">
+          <span className="font-pixel text-[7px] text-neon-yellow">MODEL:</span>
+          <button
+            onClick={() => cycleModel(-1)}
+            className="font-pixel text-[10px] text-neon-cyan hover:text-white px-1"
+            type="button"
+          >
+            {"<"}
+          </button>
+          <span className={cn("font-pixel text-[8px] uppercase border px-2 py-1 min-w-[100px] text-center", colorClass)}>
+            {selectedModel}
+          </span>
+          <button
+            onClick={() => cycleModel(1)}
+            className="font-pixel text-[10px] text-neon-cyan hover:text-white px-1"
+            type="button"
+          >
+            {">"}
+          </button>
+        </div>
+      )}
+
       <div
         className={cn(
           "border-2 border-neon-green bg-black p-3",
@@ -45,7 +95,9 @@ export function ChatComposer({
       >
         <div className="flex items-center gap-2 mb-2">
           <span className="font-pixel text-[8px] text-neon-yellow">{">"}</span>
-          <span className="font-pixel text-[8px] text-neon-green">INPUT</span>
+          <span className="font-pixel text-[8px] text-neon-green">
+            {mode === "debate" ? "DEBATE TOPIC" : "INPUT"}
+          </span>
         </div>
         <textarea
           ref={textareaRef}
@@ -57,7 +109,7 @@ export function ChatComposer({
               onSubmit();
             }
           }}
-          placeholder="TYPE YOUR MESSAGE..."
+          placeholder={mode === "debate" ? "ENTER DEBATE TOPIC..." : "TYPE YOUR MESSAGE..."}
           disabled={disabled}
           rows={1}
           className={cn(
@@ -86,6 +138,8 @@ export function ChatComposer({
                 <span className="animate-blink">...</span>
                 WAIT
               </span>
+            ) : mode === "debate" ? (
+              <span>FIGHT! {">>"}</span>
             ) : (
               <span>SEND {">>"}</span>
             )}

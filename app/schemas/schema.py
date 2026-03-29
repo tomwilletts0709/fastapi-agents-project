@@ -37,6 +37,25 @@ class AgentConfig(BaseModel):
     created_at: datetime = Field(..., description="The creation date of the agent config")
     updated_at: datetime = Field(..., description="The last update date of the agent config")
 
+class DebateRequest(BaseModel):
+    topic: str
+    models: list[str]
+    rounds: int = 1
+    conversation_id: int
+
+
+class DebateTurn(BaseModel):
+    model: str
+    content: str
+    round: int
+
+class DebateTurn(BaseModel):
+    model: str
+    content: str
+    round: int
+
+
+
 class Project(BaseModel): 
     id: int
     name: str = Field(..., description="The name of the project")
@@ -45,4 +64,3 @@ class Project(BaseModel):
     updated_at: datetime = Field(..., description="The last update date of the project")
     user_id: int = Field(..., description="The id of the user")
 
-    

@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.ai.agents import AGENTS
@@ -34,19 +33,6 @@ async def chat(
         raise HTTPException(status_code=400, detail=f"Unknown model: {model}")
     agent = AGENTS[model] if model else None
     return await llm_service.send_message(database, conversation_id, prompt, agent=agent)
-
-
-class DebateRequest(BaseModel):
-    topic: str
-    models: list[str]
-    rounds: int = 1
-    conversation_id: int
-
-
-class DebateTurn(BaseModel):
-    model: str
-    content: str
-    round: int
 
 
 @router.post("/debate")

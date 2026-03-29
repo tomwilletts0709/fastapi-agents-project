@@ -10,8 +10,8 @@ const pixelFont = Press_Start_2P({
 });
 
 export const metadata: Metadata = {
-  title: "CHAT QUEST // HISTORY ARENA",
-  description: "A retro AI chat agent. Insert coin to begin.",
+  title: "CHAT QUEST // AI ARENA",
+  description: "A retro AI chat agent with multi-model debate. Insert coin to begin.",
 };
 
 export default function RootLayout({
