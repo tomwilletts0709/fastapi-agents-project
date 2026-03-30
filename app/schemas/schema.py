@@ -49,11 +49,6 @@ class DebateTurn(BaseModel):
     content: str
     round: int
 
-class DebateTurn(BaseModel):
-    model: str
-    content: str
-    round: int
-
 
 class Project(BaseModel): 
     id: int

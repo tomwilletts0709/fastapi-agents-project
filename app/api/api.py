@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.ai.agents import AGENTS
 from app.models.db import get_db
 from app.models.models import Conversation
+from app.schemas.schema import DebateRequest, DebateTurn
 from app.services.llm_service import LLMService
 from app.services.llm_debate_service import LLMDebateService
 
