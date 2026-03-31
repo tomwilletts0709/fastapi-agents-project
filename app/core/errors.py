@@ -16,3 +16,7 @@ class BadRequestError(CustomHTTPException):
 class InternalServerError(CustomHTTPException):
     def __init__(self, detail: str = "Internal server error") -> None:
         super().__init__(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=detail)
+
+class NoAgentWinnerVotesError(CustomHTTPException):
+    def __init__(self, detail: str = "No agent winner votes") -> None:
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
