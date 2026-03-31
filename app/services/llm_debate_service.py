@@ -11,6 +11,13 @@ class DebateTurn(BaseModel):
     content: str
     round: int
 
+class JuryTurn(BaseModel):
+    model: str
+    content: str
+    round: int
+
+
+
 
 class LLMDebateService:
     """Orchestrates a multi-agent debate where agents take turns responding.
@@ -118,4 +125,24 @@ class LLMDebateService:
                 winner = max(votes, key=lambda v: v["votes"])
                 return winner["choice"]
             
+    async def jury_service(
+        self, 
+        session: AsyncSession,
+        conversation_id: int,
+        topic: str,
+        rounds: int = 1,
+    ) -> list[JuryTurn]: 
+        """This function enables the models to act as a jury to your input and then work together 
+        to decide on the best response from the list of responses."""
+        turns: list[JuryTurn] = []
+        history: list[ModelRequest | ModelResponse] = []
 
+        jury_prompt = (
+            f"You are in a structured debate. The topic is: {topic}\n"
+            "Respond with your position. Be concise but substantive. "
+            "If other participants have already spoken, you may reference and respond to their arguments."
+        )
+
+        session.add(Message(
+            conversation_id=conversation_id,
+            content=topic))
