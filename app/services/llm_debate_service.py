@@ -73,3 +73,16 @@ class LLMDebateService:
                 ))
 
         return turns
+        
+        async def model_vote(
+            self, 
+            session: AsyncSession,
+            conversation_id: int,
+            turn: DebateTurn,
+        ) -> str: 
+            """This functions enables the model to vote on the best response.
+            It will be used to select the best response from the list of responses 
+            and each agent has one vote."""
+            prompt = f"Vote on the best response from the following list: {turn.content}"
+            result = await self.agent.run(prompt)
+            return result.output
