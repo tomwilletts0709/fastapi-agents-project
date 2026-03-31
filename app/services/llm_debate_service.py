@@ -74,15 +74,30 @@ class LLMDebateService:
 
         return turns
         
-        async def model_vote(
-            self, 
-            session: AsyncSession,
-            conversation_id: int,
-            turn: DebateTurn,
-        ) -> str: 
-            """This functions enables the model to vote on the best response.
-            It will be used to select the best response from the list of responses 
-            and each agent has one vote."""
-            prompt = f"Vote on the best response from the following list: {turn.content}"
-            result = await self.agent.run(prompt)
+    async def model_vote(
+        self, 
+        session: AsyncSession,
+        conversation_id: int,
+        turns: list[DebateTurn],
+    ) -> str: 
+        """This functions enables each model to vote on the best response.
+         It will be used by the agents to select the best response from the list of responses 
+        and each agent has one vote."""
+        for current_round in range(1, len(turns) + 1):
+            for agent in self.agents:
+                vote_prompt = f"Vote on the best response from the following list: {DebateTurn(model=agent.name, content=turns[current_round].content, round=current_round).content}"
+                result = await agent.run(vote_prompt)
             return result.output
+
+    async def select_winner(
+        self,
+        session: AsyncSession,
+        conversation_id: int,
+        turn: list[DebateTurn],
+    ) -> str: 
+        """This functions enables the model to select the winner of the debate.
+        It will be used to select the winner of the debate from the list of responses."""
+        winner_prompt = f"Select the winner of the debate from the following list: {turn.content}"
+        result = await self.agents.run(winner_prompt)
+        return result.output
+        
