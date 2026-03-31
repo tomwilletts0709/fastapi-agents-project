@@ -146,3 +146,15 @@ class LLMDebateService:
         session.add(Message(
             conversation_id=conversation_id,
             content=topic))
+        
+        for current_round in range(1, rounds + 1):
+            for agent, model_name in zip(self.agents, self.model_names):
+                prompt = jury_prompt
+                if history:
+                    prompt += "\n\nDebate so far:\n"
+                    for turn in turns:
+                        prompt += f"\n[{turn.model.upper()}] {turn.content}\n"
+
+                results = await agent.run(prompt, message_history=history)
+                response_text = results.output
+                
