@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from pydantic_ai import Agent, ModelRequest, ModelResponse, TextPart, UserPromptPart
+from app.core.errors import NoAgentWinnerVotesError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.models import Message
@@ -112,7 +113,7 @@ class LLMDebateService:
 
             return votes
             if not votes: 
-                raise ValueError("No votes received")
+                raise NoAgentWinnerVotesError()
             else: 
                 winner = max(votes, key=lambda v: v["votes"])
                 return winner["choice"]
