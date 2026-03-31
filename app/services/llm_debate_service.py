@@ -78,26 +78,43 @@ class LLMDebateService:
         self, 
         session: AsyncSession,
         conversation_id: int,
-        turns: list[DebateTurn],
-    ) -> str: 
+        round_num: int,
+        round_turns: list[DebateTurn],
+    ) -> list[dict]: 
         """This functions enables each model to vote on the best response.
          It will be used by the agents to select the best response from the list of responses 
         and each agent has one vote."""
-        for current_round in range(1, len(turns) + 1):
-            for agent in self.agents:
-                vote_prompt = f"Vote on the best response from the following list: {DebateTurn(model=agent.name, content=turns[current_round].content, round=current_round).content}"
-                result = await agent.run(vote_prompt)
-            return result.output
+        votes: list[dict] = []
+        round_numbers = sorted{{t.round for t in round_turns}}
 
-    async def select_winner(
-        self,
-        session: AsyncSession,
-        conversation_id: int,
-        turn: list[DebateTurn],
-    ) -> str: 
-        """This functions enables the model to select the winner of the debate.
-        It will be used to select the winner of the debate from the list of responses."""
-        winner_prompt = f"Select the winner of the debate from the following list: {turn.content}"
-        result = await self.agents.run(winner_prompt)
-        return result.output
-        
+        for r in round_numbers:
+            round_turns = [t for t in round_turns if t.round == r]
+            ballot = (r, round_turns)
+
+            for agent, voter_name in zip(self.agents, self.model_names):
+                others = [t for t in round_turns if t.model != voter_name]
+                
+                results = await agent.run(prompt)
+                choice = results.output.strip()
+
+                votes.append({
+                    "voter": voter_name,
+                    "choice": choice,
+                    "others": [t.model for t in others],
+                })
+
+                session.add(Message(
+                    conversation_id=conversation_id,
+                    content=f"[{voter_name.upper()}] {choice}",
+                    role="assistant",
+                ))
+            await session.commit()
+
+            return votes
+            if not votes: 
+                raise ValueError("No votes received")
+            else: 
+                winner = max(votes, key=lambda v: v["votes"])
+                return winner["choice"]
+            
+
