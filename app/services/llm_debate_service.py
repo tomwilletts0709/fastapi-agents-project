@@ -93,7 +93,7 @@ class LLMDebateService:
          It will be used by the agents to select the best response from the list of responses 
         and each agent has one vote."""
         votes: list[dict] = []
-        round_numbers = sorted{{t.round for t in round_turns}}
+        round_numbers = sorted{t.round for t in round_turns}
 
         for r in round_numbers:
             round_turns = [t for t in round_turns if t.round == r]
