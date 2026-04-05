@@ -1,5 +1,4 @@
-from loguru import logger 
-from typing import Any
+from loguru import logger
 import sys
 
 def setup_logging() -> None:
@@ -7,4 +6,7 @@ def setup_logging() -> None:
     logger.add("logs/app.log", format="{time} {level} {message}", rotation="100 MB", retention="7 days", level="INFO")
     logger.add(sys.stdout, format="{time} {level} {message}", level="INFO")
 
-log = logger.bind(service="chat-agent")
+def get_logger():
+    return logger.bind(service="chat-agent")
+
+log = get_logger()
