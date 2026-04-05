@@ -3,6 +3,7 @@ from pydantic_ai import Agent, ModelRequest, ModelResponse, TextPart, UserPrompt
 from app.core.errors import NoAgentWinnerVotesError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.ai.prompts import debate_prompt as DEBATE_PROMPT, jury_prompt as JURY_PROMPT, vote_prompt as VOTE_PROMPT
 from app.models.models import Message
 
 
@@ -11,12 +12,11 @@ class DebateTurn(BaseModel):
     content: str
     round: int
 
+
 class JuryTurn(BaseModel):
     model: str
     content: str
     round: int
-
-
 
 
 class LLMDebateService:
@@ -40,12 +40,6 @@ class LLMDebateService:
         turns: list[DebateTurn] = []
         history: list[ModelRequest | ModelResponse] = []
 
-        debate_prompt = (
-            f"You are in a structured debate. The topic is: {topic}\n"
-            "Respond with your position. Be concise but substantive. "
-            "If other participants have already spoken, you may reference and respond to their arguments."
-        )
-
         session.add(Message(
             conversation_id=conversation_id,
             content=topic,
@@ -55,7 +49,7 @@ class LLMDebateService:
 
         for current_round in range(1, rounds + 1):
             for agent, model_name in zip(self.agents, self.model_names):
-                prompt = debate_prompt
+                prompt = DEBATE_PROMPT + f"\n\nTopic: {topic}"
                 if history:
                     prompt += "\n\nDebate so far:\n"
                     for turn in turns:
@@ -100,16 +94,9 @@ class LLMDebateService:
             for agent, voter_name in zip(self.agents, self.model_names):
                 others = [t for t in current_round_turns if t.model != voter_name]
 
-                prompt = (
-                    f"You are voting on the best argument in debate round {r}.\n"
-                    "Review the following arguments from other participants:\n"
-                )
+                prompt = VOTE_PROMPT + f"\n\nRound {r} arguments:\n"
                 for t in others:
                     prompt += f"\n[{t.model.upper()}]: {t.content}\n"
-                prompt += (
-                    "\nWhich participant made the strongest argument? "
-                    "Reply with just the model name, exactly as shown in brackets above."
-                )
 
                 results = await agent.run(prompt)
                 choice = results.output.strip()
@@ -131,6 +118,16 @@ class LLMDebateService:
             raise NoAgentWinnerVotesError()
         return votes
 
+    def tally_votes(self, votes: list[dict]) -> str:
+        """Count votes and return the model name with the most votes."""
+        tally: dict[str, int] = {}
+        for vote in votes:
+            choice = vote["choice"]
+            tally[choice] = tally.get(choice, 0) + 1
+        if not tally:
+            raise NoAgentWinnerVotesError()
+        return max(tally, key=lambda k: tally[k])
+
     async def jury_service(
         self,
         session: AsyncSession,
@@ -143,12 +140,6 @@ class LLMDebateService:
         turns: list[JuryTurn] = []
         history: list[ModelRequest | ModelResponse] = []
 
-        jury_prompt = (
-            f"You are serving as a juror deliberating on the following topic: {topic}\n"
-            "Assess the arguments carefully and give your reasoned verdict. Be concise but substantive. "
-            "If other jurors have already spoken, you may reference and respond to their reasoning."
-        )
-
         session.add(Message(
             conversation_id=conversation_id,
             content=topic,
@@ -158,7 +149,7 @@ class LLMDebateService:
 
         for current_round in range(1, rounds + 1):
             for agent, model_name in zip(self.agents, self.model_names):
-                prompt = jury_prompt
+                prompt = JURY_PROMPT + f"\n\nTopic: {topic}"
                 if history:
                     prompt += "\n\nDeliberation so far:\n"
                     for turn in turns:

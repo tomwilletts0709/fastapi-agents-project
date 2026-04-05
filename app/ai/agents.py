@@ -13,6 +13,7 @@ from pydantic_ai.providers.mistral import MistralProvider
 from pydantic_ai.providers.ollama import OllamaProvider
 from pydantic_ai.providers.openai import OpenAIProvider
 
+from app.ai.model_names import ModelName
 from app.ai.prompts import system_prompt
 from app.core.settings import settings
 
@@ -86,13 +87,13 @@ mistral_agent = Agent(
     system_prompt=system_prompt,
 )
 
-AGENTS: dict[str, Agent] = {
-    "anthropic": anthropic_agent,
-    "openai": openai_agent,
-    "groq": groq_agent,
-    "ollama": ollama_agent,
-    "google": google_agent,
-    "mistral": mistral_agent,
+AGENTS: dict[ModelName, Agent] = {
+    ModelName.anthropic: anthropic_agent,
+    ModelName.openai: openai_agent,
+    ModelName.groq: groq_agent,
+    ModelName.ollama: ollama_agent,
+    ModelName.google: google_agent,
+    ModelName.mistral: mistral_agent,
 }
 
 chat_agent = anthropic_agent
